@@ -362,6 +362,30 @@ return {
     end
   },
 
+  -- 単語のハイライト
+  {
+    "RRethy/vim-illuminate",
+    event = "VeryLazy",
+    config = function()
+      require('illuminate').configure({
+        filetypes_denylist = {
+          'dirvish',
+          'fugitive',
+          'NvimTree',
+          'TelescopePrompt',
+          'toggleterm',
+        },
+        under_cursor = true,
+      })
+
+      vim.api.nvim_create_autocmd("CursorMoved", {
+        callback = function()
+          require('illuminate').on_cursor_moved()
+        end,
+      })
+    end
+  },
+
   -- その他
   {
     "simeji/winresizer",
@@ -517,7 +541,7 @@ return {
           -- enabled = false
           auto_trigger = true,
           keymap = {
-            accept = "<Tab>",
+            accept = "<f13>",
           }
         },
         panel = {enabled = false},
@@ -533,21 +557,9 @@ return {
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
-      "ravitemer/mcphub.nvim"
     },
     config = function()
-      require("codecompanion").setup({
-        extensions = {
-          mcphub = {
-            callback = "mcphub.extensions.codecompanion",
-            opts = {
-              make_vars = true,
-              make_slash_commands = true,
-              show_result_in_chat = true
-            }
-          }
-        }
-      })
+      require("codecompanion").setup()
 
       vim.keymap.set({ "n", "v" }, "<leader>c", "<cmd>CodeCompanionActions<cr>", { noremap = true, silent = true })
       vim.keymap.set({ "n", "v" }, "<leader>d", "<cmd>CodeCompanionChat Toggle<cr>", { noremap = true, silent = true })
@@ -557,5 +569,6 @@ return {
       vim.cmd([[cab cc CodeCompanion]])
     end
   },
+
 }
 
