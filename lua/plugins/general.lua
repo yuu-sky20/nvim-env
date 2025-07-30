@@ -285,6 +285,124 @@ return {
     dependencies = "tpope/vim-fugitive",
   },
 
+  -- GItの差分を表示
+  {
+    "sindrets/diffview.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {
+      enhanced_diff_hl = true,
+      use_icons = true,
+      signs = {
+        fold_closed = "",
+        fold_open = "",
+      },
+    },
+    keys = {
+      {
+        "<leader>gd",
+        function()
+          require("diffview").open({ "HEAD~1" })
+        end,
+        desc = "[DiffView]: Open Diff View for HEAD~1",
+      },
+      {
+        "<leader>gD",
+        function()
+          require("diffview").close()
+        end,
+        desc = "[DiffView]: Close Diff View",
+      },
+      {
+        "<leader>gf",
+        "<cmd>DiffviewFileHistory %<CR>",
+        desc = "[DiffView]: Open File History for current file",
+      },
+    },
+  },
+
+  -- Gitのコミットグラフを表示
+  {
+    'isakbm/gitgraph.nvim',
+    dependencies = {
+      'sindrets/diffview.nvim'
+    },
+    opts = {
+      git_cmd = "git",
+      symbols = {
+        merge_commit = "○",
+        commit = "●",
+        merge_commit_end = "○",
+        commit_end = "●",
+
+        -- Advanced symbols
+        GVER = "│",
+        GHOR = "─",
+        GCLD = "╮",
+        GCRD = "╭",
+        GCLU = "╯",
+        GCRU = "╰",
+        GLRU = "┴",
+        GLRD = "┬",
+        GLUD = "┤",
+        GRUD = "├",
+        GFORKU = "┼",
+        GFORKD = "┼",
+        GRUDCD = "├",
+        GRUDCU = "┡",
+        GLUDCD = "┪",
+        GLUDCU = "┩",
+        GLRDCL = "┬",
+        GLRDCR = "┬",
+        GLRUCL = "┴",
+        GLRUCR = "┴",
+      },
+      format = {
+        timestamp = '%H:%M:%S %d-%m-%Y',
+        fields = { 'hash', 'timestamp', 'author', 'branch_name', 'tag' },
+      },
+      hooks = {
+        on_select_commit = function(commit)
+          print('selected commit:', commit.hash)
+        end,
+        on_select_range_commit = function(from, to)
+          print('selected range:', from.hash, to.hash)
+        end,
+      },
+    },
+    keys = {
+      {
+        "<leader>gl",
+        function()
+          require('gitgraph').draw({}, { all = false, max_count = 100 })
+        end,
+        desc = "Git Graph: 現在のブランチのみ",
+      },
+      {
+        "<leader>gL",
+        function()
+          require('gitgraph').draw({}, { all = true, max_count = 5000 })
+        end,
+        desc = "GitGraph: 全ブランチの表示",
+      },
+    },
+  },
+
+  -- Git Brame表示
+  {
+    "FabijanZulj/blame.nvim",
+    lazy = false,
+    keys = {
+      {
+        "<leader>gb",
+        "<cmd>BlameToggle virtual<CR>",
+        desc = "Git Blame: Toggle Virtual Blame",
+      },
+    },
+    config = function()
+      require('blame').setup {}
+    end,
+  },
+
   -- 括弧補完など
   {
     "alvan/vim-closetag",
