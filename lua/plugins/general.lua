@@ -469,6 +469,40 @@ return {
     },
   },
 
+  -- コードのアウトライン表示
+  {
+    'stevearc/aerial.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = {
+       "nvim-treesitter/nvim-treesitter",
+       "nvim-tree/nvim-web-devicons"
+    },
+    config = function()
+      require('aerial').setup({
+        backends = { "treesitter", "lsp" },
+        show_guides = true,
+        show_guide_icons = true,
+        show_cursor = true,
+        show_unlisted = false,
+        close_on_select = true,
+        filter_kind = false,
+        keymaps = {
+          ["<CR>"] = "actions.jump",
+          ["<leader>v"] = "actions.jump_vsplit",
+          ["<leader>s"] = "actions.jump_split",
+          ["<leader>t"] = "actions.jump_tab",
+          ["<leader>r"] = "actions.rename",
+          ["<leader>d"] = "actions.peek_definition",
+          ["<leader>f"] = "actions.focus",
+          ["<leader>F"] = "actions.jump_quickfix",
+          ["<leader>h"] = "actions.hover",
+        },
+      })
+      vim.keymap.set("n", "<leader>a", "<cmd>AerialToggle!<CR>", { desc = "[Aerial]: Toggle Aerial" })
+    end
+  },
+
   -- インラインでdiagnosticメッセージを表示
   {
     "rachartier/tiny-inline-diagnostic.nvim",
