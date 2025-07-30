@@ -1,0 +1,54 @@
+-- キーマップ用オプション
+local opts = { noremap = true, silent = true }
+local keymap = vim.keymap.set
+
+-- Leader
+vim.g.mapleader = ' '
+
+-- JJ
+keymap('i', 'jj', '<ESC>', {silent=true, desc="Insertモードでjjを押すとEsc"})
+
+-- ウィンドウの分割
+keymap('n', 'sv', '<C-w>v', {desc="ウィンドウを垂直分割"})
+keymap('n', 'ss', '<C-w>s', {desc="ウィンドウを水平分割"})
+
+-- カレントウィンドウを移動
+keymap('n', 'sl', '<C-w>l', {desc="ウィンドウを右に移動"})
+keymap('n', 'sh', '<C-w>h', {desc="ウィンドウを左に移動"})
+keymap('n', 'sj', '<C-w>j', {desc="ウィンドウを下に移動"})
+keymap('n', 'sk', '<C-w>k', {desc="ウィンドウを上に移動"})
+
+-- ウィンドウの位置を移動
+keymap('n', 'sL', '<C-w>L', {desc="ウィンドウを右に移動"})
+keymap('n', 'sH', '<C-w>H', {desc="ウィンドウを左に移動"})
+keymap('n', 'sJ', '<C-w>J', {desc="ウィンドウを下に移動"})
+keymap('n', 'sK', '<C-w>K', {desc="ウィンドウを上に移動"})
+
+-- タブ
+keymap('n', '<Leader>n', ':tabnew<CR>', {desc="新しいタブを開く"})
+keymap('n', '<Leader>l', ':tabn<CR>', {desc="次のタブに移動"})
+keymap('n', '<Leader>h', ':tabp<CR>', {desc="前のタブに移動"})
+
+-- Fern 開く（Ctrl + a）
+keymap("n", "<C-a>", ":Fern . -reveal=% -drawer -toggle -width=30<CR>", {desc="[Fern]: サイドエクスプローラーを開く"})
+keymap("n", "<Leader>v", "<Plug>(fern-action-open:vsplit)", {silent=true, desc="[Fern]: 垂直分割で開く"})
+keymap("n", "<Leader>s", "<Plug>(fern-action-open:split)", {silent=true, desc="[Fern]: 水平分割で開く"})
+
+-- Tagbar 切替
+keymap("n", "<Leader>t", ":TagbarToggle<CR>", {desc="[]Tagbar]: 表示切り替え"})
+
+-- LSPベースのジャンプ（nvim-lspconfig）
+keymap("n", "<Leader>ld", vim.lsp.buf.definition, { noremap = true, silent = true, desc="[LSP]: 定義を表示"})
+keymap("n", "<Leader>ly", vim.lsp.buf.type_definition, { noremap = true, silent = true, desc="[LSP]: 型定義を表示"})
+keymap("n", "<Leader>lr", vim.lsp.buf.references, { noremap = true, silent = true, desc="[LSP]: リファレンスを表示"})
+keymap("n", "<Leader>li", vim.lsp.buf.implementation, { noremap = true, silent = true, desc="[LSP]: 実装を表示"})
+
+-- emmet
+keymap("i", "<C-e>", "<Plug>(emmet-expand-abbr)", {silent=true, desc="[Emmet]: 展開"})
+
+-- LSP カーソル下のエラー内容を表示する
+vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)
+
+-- noh エイリアス
+vim.keymap.set('n', '<leader>m', ':nohlsearch<CR>', {desc=":noh"})
+
