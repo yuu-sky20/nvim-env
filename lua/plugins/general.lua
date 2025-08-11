@@ -1,21 +1,5 @@
 return {
   -- カラースキーム
-  -- {
-  --   "catppuccin/nvim",
-  --   name = "catppuccin",
-  --   priority = 1000,
-  --   config = function()
-  --     require("catppuccin").setup({
-  --       flavour = "mocha",
-  --       color_overrides = {
-  --         mocha = {
-  --         },
-  --       },
-  --       transparent_background = true,
-  --     })
-  --     -- vim.cmd.colorscheme "catppuccin-mocha"
-  --   end
-  -- },
   {
     "scottmckendry/cyberdream.nvim",
     lazy = false,
@@ -97,9 +81,11 @@ return {
 
       -- Visualモードの選択範囲の背景色を変更
       vim.api.nvim_set_hl(0, "Visual", { bg = "#0E676E", fg = "NONE", bold = false })
+      -- カレント行の行番号の背景色を変更
+      vim.opt.cursorline = true
+      vim.api.nvim_set_hl(0, "CursorLineNr", { bg = "NONE", fg = "#5bcfb5", bold = true })
     end
   },
-
 
   -- アイコン
   { "lambdalisue/vim-nerdfont" },
@@ -164,47 +150,141 @@ return {
   --     opts = {}
   -- },
 
-  -- Fern
+  -- Snacks.nvim
   {
-    "lambdalisue/fern.vim",
-    config = function()
-      vim.cmd[[let g:fern#default_hidden=1]]
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "fern",
-        callback = function()
-          vim.keymap.set('n', 's', '', { buffer = true })
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+      bigfile = { enabled = true },
+      dashboard = { enabled = true },
+      explorer = { enabled = true },
+      indent = { enabled = true, },
+      input = { enabled = true },
+      image = { enabled = true },
+      picker = { enabled = true },
+      notifier = { enabled = true },
+      quickfile = { enabled = true },
+      scope = { enabled = true },
+      scroll = { enabled = true },
+      statuscolumn = { enabled = true },
+      words = { enabled = true },
+    },
+    keys = {
+      {
+        "<C-a>",
+        function()
+          Snacks.picker.explorer()
         end,
+        desc = "Snacks: Open Picker",
+      },
+      {
+        "<leader>pp",
+        function()
+          Snacks.picker()
+        end,
+        desc = "Snacks: Open Picker",
+      },
+      {
+        "<leader>pr",
+        function()
+          Snacks.picker.recent()
+        end,
+        desc = "Snacks: Open Recent Files",
+      },
+      {
+        "<leader>pg",
+        function()
+          Snacks.picker.grep()
+        end,
+        desc = "Snacks: Open Grep",
+      },
+      {
+        "<leader>pf",
+        function()
+          Snacks.picker.files()
+        end,
+        desc = "Snacks: Open files",
+      },
+      {
+        "<leader>pn",
+        function()
+          Snacks.notifier.show_history()
+        end,
+        desc = "Snacks: Open Notifier",
+      },
+      {
+        "<leader>pn",
+        function()
+          Snacks.notifier.show_history()
+        end,
+        desc = "Snacks: Open Notifier",
+      },
+    },
+    config = function()
+      vim.notify = require("notify")
+      require('snacks').setup({
+        Snacks.indent.enable(),
+        notifier = {
+          backend = function(msg, level, opts)
+            require("notify")(msg, level, opts)
+          end
+        },
       })
     end,
   },
+  
+  -- ツリー状にコードを整形
   {
-    "TheLeoP/fern-renderer-web-devicons.nvim",
-    dependencies = { 'nvim-tree/nvim-web-devicons', 'lambdalisue/vim-glyph-palette' , 'lambdalisue/fern.vim' },
+    'Wansmer/treesj',
+    keys = { '<space>j' },
+    dependencies = { 'nvim-treesitter/nvim-treesitter' }, -- if you install parsers with `nvim-treesitter`
     config = function()
-      vim.g["fern#renderer"] = "nvim-web-devicons"
-      vim.g["glyph_palette#palette"] = require'fr-web-icons'.palette()
-    end
+      require('treesj').setup({
+        vim.keymap.set("n", "<space>j", function()
+          require("treesj").toggle({
+            split = { recursive = true }, -- split recursively
+          })
+       end, { desc = "Treesj: Toggle" }),
+      })
+    end,
   },
+
+  -- Zenモードの導入
   {
-    "lambdalisue/vim-fern-git-status",
-    dependencies = { 'lambdalisue/fern.vim' }
+    "shortcuts/no-neck-pain.nvim",
+    version = "*",
+    config = function()
+      require("no-neck-pain").setup({
+        buffers = {
+          right = {
+            enabled = false,
+          },
+          scratchPad = {
+            enabled = true,
+            location = "~/notes",
+          },
+          bo = {
+            filetype = "md",
+          },
+        },
+        autocmds = {
+          enableOnVimEnter = true,
+          enableOnTabEnter = true,
+          reloadOnColorSchemeChange = true,
+        },
+      })
+      vim.keymap.set({"n", "x", "o"}, "<Leader>z", "<cmd>NoNeckPain<CR>", { desc = "no-neck-pain: Toggle" })
+    end
   },
 
   -- タグウィンドウを表示
   {
     "preservim/tagbar"
   },
-
-  -- ターミナルを表示
-  {'akinsho/toggleterm.nvim', version = "*", opts = {
-      open_mapping = [[<C-\>]],
-      hide_numbers = true,
-      close_on_exit = true,
-      direction = 'float',
-      size = 100,
-      shade_terminals = true,
-      shading_factor = 2,
-  }},
 
   -- タブの表示をおしゃれにする
   {
@@ -266,15 +346,6 @@ return {
         }
       })
     end
-  },
-  -- インデント位置にラインを表示
-  {
-    "lukas-reineke/indent-blankline.nvim",
-    dependencies = "nvim-treesitter/indent-blankline.nvim",
-    main = "ibl",
-    ---@module "ibl"
-    ---@type ibl.config
-    opts = {},
   },
 
   -- Git
@@ -416,8 +487,15 @@ return {
       vim.g.closetag_shortcut = ">"
     end
   },
+
   -- 自動で括弧を閉じる
-  { "jiangmiao/auto-pairs" },
+  {
+    'windwp/nvim-autopairs',
+    event = "InsertEnter",
+    config = true,
+    -- use opts = {} for passing setup options
+    -- this is equivalent to setup({}) function
+  },
   
   -- cs"' 系の補完を有効化する
   {
@@ -514,30 +592,6 @@ return {
     end
   },
 
-  -- 単語のハイライト
-  {
-    "RRethy/vim-illuminate",
-    event = "VeryLazy",
-    config = function()
-      require('illuminate').configure({
-        filetypes_denylist = {
-          'dirvish',
-          'fugitive',
-          'NvimTree',
-          'TelescopePrompt',
-          'toggleterm',
-        },
-        under_cursor = true,
-      })
-
-      vim.api.nvim_create_autocmd("CursorMoved", {
-        callback = function()
-          require('illuminate').on_cursor_moved()
-        end,
-      })
-    end
-  },
-
   -- その他
   {
     "simeji/winresizer",
@@ -560,103 +614,11 @@ return {
         },
       })
 
-      vim.keymap.set("n", "<Leader><Leader>s", function() require("flash").jump() end, { desc = "Flash: Jump" })
-      vim.keymap.set("x", "<Leader><Leader>s", function() require("flash").jump() end, { desc = "Flash: Jump" })
-      vim.keymap.set("o", "<Leader><Leader>s", function() require("flash").jump() end, { desc = "Flash: Jump" })
-
-      vim.keymap.set("n", "<Leader><Leader>a", function() require("flash").treesitter() end, { desc = "Flash: Treesiter" })
-      vim.keymap.set("x", "<Leader><Leader>a", function() require("flash").treesitter() end, { desc = "Flash: Treesiter" })
-      vim.keymap.set("o", "<Leader><Leader>a", function() require("flash").treesitter() end, { desc = "Flash: Treesiter" })
-
-      vim.keymap.set("n", "<Leader><Leader>w", function() require("flash").treesitter_search() end, { desc = "Flash: Treesitter Search" })
-      vim.keymap.set("x", "<Leader><Leader>w", function() require("flash").treesitter_search() end, { desc = "Flash: Treesitter Search" })
-      vim.keymap.set("o", "<Leader><Leader>w", function() require("flash").treesitter_search() end, { desc = "Flash: Treesitter Search" })
-
-      vim.keymap.set("n", "<Leader><Leader>d", function() require("flash").remote() end, { desc = "Flash: Remote" })
-      vim.keymap.set("x", "<Leader><Leader>d", function() require("flash").remote() end, { desc = "Flash: Remote" })
-      vim.keymap.set("o", "<Leader><Leader>d", function() require("flash").remote() end, { desc = "Flash: Remote" })
+      vim.keymap.set({"n", "x", "o"}, "<Leader><Leader>s", function() require("flash").jump() end, { desc = "Flash: Jump" })
+      vim.keymap.set({"n", "x", "o"}, "<Leader><Leader>a", function() require("flash").treesitter() end, { desc = "Flash: Treesiter" })
+      vim.keymap.set({"n", "x", "o"}, "<Leader><Leader>w", function() require("flash").treesitter_search() end, { desc = "Flash: Treesitter Search" })
+      vim.keymap.set({"n", "x", "o"}, "<Leader><Leader>d", function() require("flash").remote() end, { desc = "Flash: Remote" })
     end
-  },
-
-  -- telescope
-  {
-    "nvim-telescope/telescope.nvim",
-    tag = '0.1.8',
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-      {
-        'nvim-telescope/telescope-frecency.nvim',
-        dependencies = { 'kkharji/sqlite.lua' },
-      },
-    },
-    config = function()
-      require('telescope').setup {
-        defaults = {
-          layout_config = {
-            horizontal = { preview_width = 0.6 },
-          },
-          sorting_strategy = "descending",
-          layout_strategy = "horizontal",
-        },
-        extensions = {
-          frecency = {
-            show_scores = true,
-            show_unindexed = true,
-            ignore_patterns = { "*.git/*", "*/tmp/*", "node_modules/*" },
-            disable_devicons = false,
-            workspaces = {
-              ["config"] = vim.fn.stdpath("config"),
-              ["notes"] = "~/notes",
-              ["project"] = "~/projects",
-            },
-          },
-        },
-      }
-
-      local telescope = require 'telescope'
-      telescope.load_extension('frecency')
-      telescope.load_extension('notify')
-      telescope.load_extension('frecency')
-    end,
-    keys = {
-      {
-        "<leader>ff",
-        function() require("telescope.builtin").find_files() end,
-        desc = "[Telescope]: ファイルを検索",
-      },
-      {
-        "<leader>fg",
-        function() require("telescope.builtin").live_grep() end,
-        desc = "[Telescope]: ライブ検索",
-      },
-      {
-        "<leader>fb",
-        function() require("telescope.builtin").buffers() end,
-        desc = "[Telescope]: バッファを検索",
-      },
-      {
-        "<leader>fh",
-        function() require("telescope.builtin").help_tags() end,
-        desc = "[Telescope]: ヘルプタグを検索",
-      },
-      {
-        "<leader>fs",
-        function()
-          require("telescope.builtin").grep_string({ search = vim.fn.input("Search > ") })
-        end,
-        desc = "[Telescope]: カスタム検索文字列で検索",
-      },
-      {
-        "<leader>fr",
-        function() require("telescope").extensions.frecency.frecency() end,
-        desc = "[Telescope]: 最近使ったファイルを検索",
-      },
-      {
-        "<leader>fn",
-        function() require("telescope").extensions.notify.notify() end,
-        desc = "[Telescope]: 通知一覧を表示",
-      },
-    },
   },
 
   -- open-browser
@@ -664,22 +626,39 @@ return {
     "https://github.com/tyru/open-browser.vim"
   },
 
+  -- markdownの描画をリッチにする
+  {
+    "MeanderingProgrammer/render-markdown.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
+    opts = {},
+    ft = { "markdown" },
+    keys = {
+      {
+        "<leader>mn",
+        ":RenderMarkdown toggle<CR>",
+        desc = "[RenderMarkdown]: Markdown表示切替"
+      },
+    },
+    config = function()
+      require("render-markdown").setup({})
+    end,
+  },
+
   -- markdown-preview
   {
     "iamcco/markdown-preview.nvim",
     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-    build = "cd app && yarn install",
-    init = function()
-      vim.g.mkdp_filetypes = { "markdown" }
+    ft = { "markdown" },
+    build = function()
+      vim.fn["mkdp#util#install"]()
     end,
-    ft = { "markdown", "md", "puml" },
     keys = {
       {
-        "<leader>p",
-        ":MarkdownPreviewToggle<CR>",
+        "<leader>mm",
+        ":MarkdownPreview<CR>",
         desc = "[MarkdownPreview]: markdownをブラウザで開く"
       },
-    }
+    },
   },
 
   -- GitHub Copilot
@@ -705,7 +684,9 @@ return {
   -- AI Coding
   {
     "olimorris/codecompanion.nvim",
-    opts = {},
+    opts = {
+      language = "japanese",
+    },
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
@@ -715,7 +696,6 @@ return {
 
       vim.keymap.set({ "n", "v" }, "<leader>c", "<cmd>CodeCompanionActions<cr>", { noremap = true, silent = true })
       vim.keymap.set({ "n", "v" }, "<leader>d", "<cmd>CodeCompanionChat Toggle<cr>", { noremap = true, silent = true })
-      vim.keymap.set("v", "<leader>x", "<cmd>CodeCompanionChat Add<cr>", { noremap = true, silent = true })
 
       -- Expand 'cc' into 'CodeCompanion' in the command line
       vim.cmd([[cab cc CodeCompanion]])
