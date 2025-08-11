@@ -9,56 +9,11 @@ return {
     },
     config = function()
       local ls = require("luasnip")
-     
       require("luasnip.loaders.from_lua").lazy_load({
         paths = "~/.config/nvim/lua/snippets",
       })
-     
       require("luasnip.loaders.from_vscode").lazy_load() -- friendly-snippets を併用したい場合
       vim.keymap.set('n', '<leader>@', require("luasnip.loaders").edit_snippet_files, { desc = "Edit snippets" })
-    end
-  },
-
-  -- Mason本体（各言語のLSPインストールを管理する）
-  {
-    "mason-org/mason.nvim",
-    config = function()
-      require("mason").setup()
-    end
-  },
-
-  -- Mason と lspconfig の橋渡し
-  {
-    "mason-org/mason-lspconfig.nvim",
-    dependencies = {
-      "mason-org/mason.nvim",
-      "neovim/nvim-lspconfig",
-    },
-    config = function()
-      require("mason-lspconfig").setup({
-        -- Masonで自動インストールしたいLSPサーバーのリスト
-        ensure_installed = {
-          "lua_ls", -- Lua
-          "ts_ls", -- TypeScript
-          "bashls", -- Bash
-          "clangd", -- C
-          "cmake", -- C MAKE
-          "cssls", -- CSS
-          "dockerls", -- Dockerfile
-          "docker_compose_language_service", -- docker-compose.yml
-          "gopls", -- GoLang
-          "html", -- HTML
-          "jsonls", -- JSON
-          "marksman", 
-          "pylsp", -- Python
-          "rust_analyzer", -- Rust
-          "intelephense", -- PHP
-          -- 必要に応じて他のLSPを追加
-        },
-        
-        -- Masonでインストールされた全てのLSPサーバーを自動設定
-        automatic_installation = true,
-      })
     end
   },
 
@@ -67,20 +22,213 @@ return {
     'neovim/nvim-lspconfig',
     dependencies = { 
       'saghen/blink.cmp',
-      'mason-org/mason-lspconfig.nvim',
+      -- 'mason-org/mason-lspconfig.nvim',
     },
     config = function()
       local lspconfig = require('lspconfig')
       local blink = require('blink.cmp')
-      
+
       -- blink.cmpのcapabilitiesを取得
       local capabilities = blink.get_lsp_capabilities()
 
-      require("mason-lspconfig").setup {
-        function(server_name)
-          require('lspconfig')[server_name].setup {}
-        end
+      -- LSPの設定
+
+      -- Lua LSP (lua-language-server)
+      lspconfig.lua_ls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        settings = {
+          Lua = {
+            runtime = {
+              version = 'LuaJIT',
+            },
+            diagnostics = {
+              globals = {'vim'},
+            },
+            workspace = {
+              library = vim.api.nvim_get_runtime_file("", true),
+            },
+            telemetry = {
+              enable = false,
+            },
+          },
+        },
+      })
+
+      -- Python LSP (pylsp)
+      lspconfig.pylsp.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        settings = {
+          pylsp = {
+            plugins = {
+              pycodestyle = {
+                ignore = {'W391'},
+                maxLineLength = 100
+              }
+            }
+          }
+        }
+      })
+
+      -- Rust LSP (rust-analyzer)
+      lspconfig.rust_analyzer.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        settings = {
+          ["rust-analyzer"] = {
+            cargo = {
+              allFeatures = true,
+            },
+            checkOnSave = {
+              command = "clippy",
+            },
+          },
+        },
+      })
+
+      -- Go LSP (gopls)
+      lspconfig.gopls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        cmd = {"gopls"},
+        filetypes = {"go", "gomod", "gowork", "gotmpl"},
+        settings = {
+          gopls = {
+            completeUnimported = true,
+            usePlaceholders = true,
+            analyses = {
+              unusedparams = true,
+            },
+          },
+        },
+      })
+
+      -- C/C++ LSP (clangd)
+      lspconfig.clangd.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        cmd = {
+          "clangd",
+          "--background-index",
+          "--clang-tidy",
+          "--header-insertion=iwyu",
+          "--completion-style=detailed",
+          "--function-arg-placeholders",
+          "--fallback-style=llvm",
+        },
+      })
+
+      -- HTML LSP
+      lspconfig.html.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        filetypes = {"html"},
+        init_options = {
+          configurationSection = { "html", "css", "javascript" },
+          embeddedLanguages = {
+            css = true,
+            javascript = true
+          },
+          provideFormatter = true
+        }
+      })
+
+      -- Bash LSP
+      lspconfig.bashls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        filetypes = {"sh", "bash"},
+      })
+
+      -- Dockerfile LSP
+      lspconfig.dockerls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+      })
+
+      -- Docker Compose LSP
+      lspconfig.docker_compose_language_service.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+      })
+
+      -- Markdown LSP (marksman)
+      lspconfig.marksman.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+      })
+
+      -- Node.js
+      local is_node_dir = function()
+        return lspconfig.util.root_pattern('package.json')(vim.fn.getcwd())
+      end
+
+      -- ts_ls
+      local ts_opts = {
+        capabilities = capabilities,
+        init_options = {
+          preferences = {
+            importModuleSpecifierPreference = "relative",
+            includeCompletionsForModuleExports = "auto",
+          },
+        },
+        settings = {
+          typescript = {
+            preferences = {
+              importModuleSpecifier = "relative",
+            },
+            suggest = {
+              includeCompletionsForModuleExports = true,
+            }
+          },
+          javascript = {
+            preferences = {
+              importModuleSpecifier = "relative",
+            },
+            suggest = {
+              includeCompletionsForModuleExports = true,
+            }
+          },
+        },
       }
+      ts_opts.on_attach = function(client)
+        if not is_node_dir() then
+          client.stop(true)
+        end
+      end
+      lspconfig.ts_ls.setup(ts_opts)
+
+      -- denols
+      local deno_opts = {
+        capabilities = capabilities,
+        root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc", "tsconfig.json", "jsconfig.json", ".git"),
+        init_options = {
+          lint = true,
+          unstable = true,
+          suggest = {
+            paths = true,
+            autoImports = true,
+          },
+        },
+        settings = {
+          deno = {
+            enable = true,
+            lint = true,
+            unstable = true,
+            suggest = {
+              paths = true,
+              autoImports = true,
+            },
+          },
+        },
+      }
+      deno_opts.on_attach = function(client)
+        if is_node_dir() then
+          client.stop(true)
+        end
+      end
+      lspconfig.denols.setup(deno_opts)
     end
   },
 
@@ -118,6 +266,12 @@ return {
       fuzzy = { implementation = "prefer_rust_with_warning" },
     },
     opts_extend = { "sources.default" }
+  },
+
+  -- JSON スキーマサポート（jsonls用）
+  {
+    "b0o/schemastore.nvim",
+    ft = "json",
   },
 
   -- Haskell
