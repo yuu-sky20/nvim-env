@@ -32,48 +32,48 @@ return {
 
         -- Override highlight groups with your own colour values
         highlights = {
-            -- Highlight groups to override, adding new groups is also possible
-            -- See `:h highlight-groups` for a list of highlight groups or run `:hi` to see all groups and their current values
+          -- Highlight groups to override, adding new groups is also possible
+          -- See `:h highlight-groups` for a list of highlight groups or run `:hi` to see all groups and their current values
 
-            -- Example:
-            Comment = { fg = "#696969", bg = "NONE", italic = true },
+          -- Example:
+          Comment = { fg = "#696969", bg = "NONE", italic = true },
 
-            -- More examples can be found in `lua/cyberdream/extensions/*.lua`
+          -- More examples can be found in `lua/cyberdream/extensions/*.lua`
         },
 
         -- Override a highlight group entirely using the built-in colour palette
         overrides = function(colors) -- NOTE: This function nullifies the `highlights` option
-            -- Example:
-            return {
-                Comment = { fg = colors.green, bg = "NONE", italic = true },
-                ["@property"] = { fg = colors.magenta, bold = true },
-            }
+          -- Example:
+          return {
+            Comment = { fg = colors.green, bg = "NONE", italic = true },
+            ["@property"] = { fg = colors.magenta, bold = true },
+          }
         end,
 
         -- Override colors
         colors = {
-            -- For a list of colors see `lua/cyberdream/colours.lua`
+          -- For a list of colors see `lua/cyberdream/colours.lua`
 
-            -- Override colors for both light and dark variants
-            bg = "#000000",
-            green = "#00ff00",
+          -- Override colors for both light and dark variants
+          bg = "#000000",
+          green = "#00ff00",
 
-            -- If you want to override colors for light or dark variants only, use the following format:
-            dark = {
-                magenta = "#ff00ff",
-                fg = "#eeeeee",
-            },
-            light = {
-                red = "#ff5c57",
-                cyan = "#5ef1ff",
-            },
+          -- If you want to override colors for light or dark variants only, use the following format:
+          dark = {
+            magenta = "#ff00ff",
+            fg = "#eeeeee",
+          },
+          light = {
+            red = "#ff5c57",
+            cyan = "#5ef1ff",
+          },
         },
 
         -- Disable or enable colorscheme extensions
         extensions = {
-            telescope = true,
-            notify = true,
-            mini = true,
+          telescope = true,
+          notify = true,
+          mini = true,
         },
       })
       -- カラースキームの設定
@@ -90,7 +90,7 @@ return {
   -- アイコン
   { "lambdalisue/vim-nerdfont" },
   { "lambdalisue/vim-glyph-palette" },
-  { "nvim-tree/nvim-web-devicons", opts = {} },
+  { "nvim-tree/nvim-web-devicons",  opts = {} },
 
   -- ステータスライン
   {
@@ -104,6 +104,41 @@ return {
         }
       })
     end
+  },
+
+  -- Linter
+  {
+    'stevearc/conform.nvim',
+    opts = {},
+    config = function()
+      local js_formatters = { { "biome", "prettierd", "prettier" } }
+      require("conform").setup({
+        formatters_by_ft = {
+          -- Lua
+          lua = { "stylua" },
+
+          -- Python
+          python = { "isort", "black" },
+
+          -- JavaScript系
+          json = js_formatters,
+          javascript = js_formatters,
+          javascriptreact = js_formatters,
+          typescript = js_formatters,
+          typescriptreact = js_formatters,
+          astro = js_formatters,
+
+          -- Markdown
+          markdown = { "markdownlint-cli2" },
+        },
+        format_on_save = {
+          timeout_ms = 2000,
+          lsp_format = "fallback",
+          lsp_fallback = true,
+          quiet = false,
+        },
+      })
+    end,
   },
 
   -- サイドバー系
@@ -166,7 +201,6 @@ return {
       input = { enabled = true },
       image = { enabled = true },
       picker = { enabled = true },
-      notifier = { enabled = true },
       quickfile = { enabled = true },
       scope = { enabled = true },
       scroll = { enabled = true },
@@ -216,32 +250,17 @@ return {
         end,
         desc = "Snacks: Search todo Comments",
       },
-      {
-        "<leader>pn",
-        function()
-          Snacks.notifier.show_history()
-        end,
-        desc = "Snacks: Open Notifier",
-      },
-      {
-        "<leader>pn",
-        function()
-          Snacks.notifier.show_history()
-        end,
-        desc = "Snacks: Open Notifier",
-      },
     },
     config = function()
-      vim.notify = require("notify")
-      require('snacks').setup({
-        Snacks.indent.enable(),
-        notifier = {
-          backend = function(msg, level, opts)
-            require("notify")(msg, level, opts)
+      Snacks.dashboard.setup()
+      vim.api.nvim_create_autocmd("BufReadPost", {
+        callback = function()
+          if vim.bo.filetype ~= "" then
+            Snacks.indent.enable()
           end
-        },
+        end
       })
-    end,
+    end
   },
 
   -- todoを見やすくする
@@ -254,7 +273,7 @@ return {
       -- refer to the configuration section below
     }
   },
-  
+
   -- ツリー状にコードを整形
   {
     'Wansmer/treesj',
@@ -266,7 +285,7 @@ return {
           require("treesj").toggle({
             split = { recursive = true }, -- split recursively
           })
-       end, { desc = "Treesj: Toggle" }),
+        end, { desc = "Treesj: Toggle" }),
       })
     end,
   },
@@ -277,25 +296,13 @@ return {
     version = "*",
     config = function()
       require("no-neck-pain").setup({
-        buffers = {
-          right = {
-            enabled = false,
-          },
-          scratchPad = {
-            enabled = true,
-            location = "~/notes",
-          },
-          bo = {
-            filetype = "md",
-          },
-        },
         autocmds = {
           enableOnVimEnter = true,
           enableOnTabEnter = true,
           reloadOnColorSchemeChange = true,
         },
       })
-      vim.keymap.set({"n", "x", "o"}, "<Leader>z", "<cmd>NoNeckPain<CR>", { desc = "no-neck-pain: Toggle" })
+      vim.keymap.set({ "n", "x", "o" }, "<Leader>z", "<cmd>NoNeckPain<CR>", { desc = "no-neck-pain: Toggle" })
     end
   },
 
@@ -323,47 +330,78 @@ return {
     "nvim-treesitter/nvim-treesitter",
     config = function()
       require("nvim-treesitter").setup({
-          -- A list of parser names, or "all" (the listed parsers MUST always be installed)
-          ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline" },
-        
-          -- Install parsers synchronously (only applied to `ensure_installed`)
-          sync_install = false,
-        
-          -- Automatically install missing parsers when entering buffer
-          -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
-          auto_install = true,
-        
-          -- List of parsers to ignore installing (or "all")
-          ignore_install = { "javascript" },
-        
-          ---- If you need to change the installation directory of the parsers (see -> Advanced Setup)
-          -- parser_install_dir = "/some/path/to/store/parsers", -- Remember to run vim.opt.runtimepath:append("/some/path/to/store/parsers")!
-        
-          highlight = {
-            enable = true,
-        
-            -- NOTE: these are the names of the parsers and not the filetype. (for example if you want to
-            -- disable highlighting for the `tex` filetype, you need to include `latex` in this list as this is
-            -- the name of the parser)
-            -- list of language that will be disabled
-            disable = { "c", "rust" },
-            -- Or use a function for more flexibility, e.g. to disable slow treesitter highlight for large files
-            disable = function(lang, buf)
-                local max_filesize = 100 * 1024 -- 100 KB
-                local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-                if ok and stats and stats.size > max_filesize then
-                    return true
-                end
-            end,
-        
-            -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
-            -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
-            -- Using this option may slow down your editor, and you may see some duplicate highlights.
-            -- Instead of true it can also be a list of languages
-            additional_vim_regex_highlighting = false,
+        -- A list of parser names, or "all" (the listed parsers MUST always be installed)
+        ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "markdown" },
+
+        -- Install parsers synchronously (only applied to `ensure_installed`)
+        sync_install = false,
+
+        -- Automatically install missing parsers when entering buffer
+        -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
+        auto_install = true,
+
+        -- List of parsers to ignore installing (or "all")
+        ignore_install = { "javascript" },
+
+        ---- If you need to change the installation directory of the parsers (see -> Advanced Setup)
+        -- parser_install_dir = "/some/path/to/store/parsers", -- Remember to run vim.opt.runtimepath:append("/some/path/to/store/parsers")!
+
+        highlight = {
+          enable = true,
+
+          -- NOTE: these are the names of the parsers and not the filetype. (for example if you want to
+          -- disable highlighting for the `tex` filetype, you need to include `latex` in this list as this is
+          -- the name of the parser)
+          -- list of language that will be disabled
+          disable = { "c", "rust" },
+          -- Or use a function for more flexibility, e.g. to disable slow treesitter highlight for large files
+          disable = function(lang, buf)
+            local max_filesize = 100 * 1024     -- 100 KB
+            local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+            if ok and stats and stats.size > max_filesize then
+              return true
+            end
+          end,
+
+          -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+          -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
+          -- Using this option may slow down your editor, and you may see some duplicate highlights.
+          -- Instead of true it can also be a list of languages
+          additional_vim_regex_highlighting = false,
         }
       })
     end
+  },
+  -- 画面上部にコードブロックを表示
+   {
+    "nvim-treesitter/nvim-treesitter-context",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    config = function()
+      require("treesitter-context").setup()
+    end,
+  },
+
+  -- HTMLなどのタグを自動で閉じる
+  {
+    "windwp/nvim-ts-autotag",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    config = function()
+      require("nvim-ts-autotag").setup({})
+    end,
+  },
+
+  -- スクロールバー
+  {
+    "petertriho/nvim-scrollbar",
+    event = { "BufNewFile", "BufReadPre" },
+    dependencies = {
+      "kevinhwang91/nvim-hlslens",
+      "lewis6991/gitsigns.nvim",
+    },
+    config = function()
+      require("scrollbar").setup({
+      })
+    end,
   },
 
   -- Git
@@ -372,6 +410,10 @@ return {
   {
     "lewis6991/gitsigns.nvim",
     dependencies = "tpope/vim-fugitive",
+    config = function()
+      require('gitsigns').setup()
+      require('scrollbar.handlers.gitsigns').setup()
+    end,
   },
 
   -- GItの差分を表示
@@ -514,17 +556,17 @@ return {
     -- use opts = {} for passing setup options
     -- this is equivalent to setup({}) function
   },
-  
+
   -- cs"' 系の補完を有効化する
   {
-      "kylechui/nvim-surround",
-      version = "^3.0.0", -- Use for stability; omit to use `main` branch for the latest features
-      event = "VeryLazy",
-      config = function()
-          require("nvim-surround").setup({
-              -- Configuration here, or leave empty to use defaults
-          })
-      end
+    "kylechui/nvim-surround",
+    version = "^3.0.0",   -- Use for stability; omit to use `main` branch for the latest features
+    event = "VeryLazy",
+    config = function()
+      require("nvim-surround").setup({
+        -- Configuration here, or leave empty to use defaults
+      })
+    end
   },
 
   -- emmet
@@ -535,15 +577,42 @@ return {
 
   -- 通知をわかりやすくする
   {
-    "rcarriga/nvim-notify",
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    opts = {
+      -- add any options here
+    },
+    dependencies = {
+      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+      "MunifTanjim/nui.nvim",
+      -- OPTIONAL:
+      --   `nvim-notify` is only needed, if you want to use the notification view.
+      --   If not available, we use `mini` as the fallback
+      "rcarriga/nvim-notify",
+    },
     config = function()
-      local notify = require("notify")
-      notify.setup({
-        background_colour = "#000000",
+      require("noice").setup({
+        lsp = {
+          override = {
+            ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+            ["vim.lsp.util.stylize_markdown"] = true,
+            ["cmp.entry.get_documentation"] = true,
+          },
+        },
+        presets = {
+          bottom_search = true,         -- use a classic bottom cmdline for search
+          command_palette = true,       -- position the cmdline and popupmenu together
+          long_message_to_split = true, -- long messages will be sent to a split
+          inc_rename = false,           -- enables an input dialog for inc-rename.nvim
+        },
       })
-      vim.notify = notify
-    end
+
+      vim.keymap.set("n", "<leader>pn", function()
+        require("noice").cmd("last")
+      end, { desc = "[Noice]: Show Last Notification" })
+    end,
   },
+
   -- RGBに色を付ける
   {
     "norcalli/nvim-colorizer.lua",
@@ -571,8 +640,8 @@ return {
     opts = {},
     -- Optional dependencies
     dependencies = {
-       "nvim-treesitter/nvim-treesitter",
-       "nvim-tree/nvim-web-devicons"
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-tree/nvim-web-devicons"
     },
     config = function()
       require('aerial').setup({
@@ -603,10 +672,10 @@ return {
   {
     "rachartier/tiny-inline-diagnostic.nvim",
     event = "VeryLazy", -- Or `LspAttach`
-    priority = 1000, -- needs to be loaded in first
+    priority = 1000,    -- needs to be loaded in first
     config = function()
-        require('tiny-inline-diagnostic').setup()
-        vim.diagnostic.config({ virtual_text = false }) -- Only if needed in your configuration, if you already have native LSP diagnostics
+      require('tiny-inline-diagnostic').setup()
+      vim.diagnostic.config({ virtual_text = false })   -- Only if needed in your configuration, if you already have native LSP diagnostics
     end
   },
 
@@ -632,10 +701,14 @@ return {
         },
       })
 
-      vim.keymap.set({"n", "x", "o"}, "<Leader><Leader>s", function() require("flash").jump() end, { desc = "Flash: Jump" })
-      vim.keymap.set({"n", "x", "o"}, "<Leader><Leader>a", function() require("flash").treesitter() end, { desc = "Flash: Treesiter" })
-      vim.keymap.set({"n", "x", "o"}, "<Leader><Leader>w", function() require("flash").treesitter_search() end, { desc = "Flash: Treesitter Search" })
-      vim.keymap.set({"n", "x", "o"}, "<Leader><Leader>d", function() require("flash").remote() end, { desc = "Flash: Remote" })
+      vim.keymap.set({ "n", "x", "o" }, "<Leader><Leader>s", function() require("flash").jump() end,
+        { desc = "Flash: Jump" })
+      vim.keymap.set({ "n", "x", "o" }, "<Leader><Leader>a", function() require("flash").treesitter() end,
+        { desc = "Flash: Treesiter" })
+      vim.keymap.set({ "n", "x", "o" }, "<Leader><Leader>w", function() require("flash").treesitter_search() end,
+        { desc = "Flash: Treesitter Search" })
+      vim.keymap.set({ "n", "x", "o" }, "<Leader><Leader>d", function() require("flash").remote() end,
+        { desc = "Flash: Remote" })
     end
   },
 
@@ -679,6 +752,25 @@ return {
     },
   },
 
+  -- コードブロックの開閉
+  {
+    "kevinhwang91/nvim-ufo",
+    dependencies = {
+      "kevinhwang91/promise-async",
+      "kevinhwang91/nvim-treesitter"
+    },
+    config = function()
+      vim.o.foldcolumn = '1' -- '0' is not bad
+      vim.o.foldlevel = 99   -- Using ufo provider need a large value, feel free to decrease the value
+      vim.o.foldlevelstart = 99
+      vim.o.foldenable = true
+      vim.keymap.set("n", "<leader>ga", require('ufo').openAllFolds, { desc = "[UFO]: Open All Folds" })
+      vim.keymap.set("n", "<leader>gs", require('ufo').closeAllFolds, { desc = "[UFO]: Close All Folds" })
+
+      require("ufo").setup()
+    end,
+  },
+
   -- GitHub Copilot
   {
     "zbirenbaum/copilot.lua",
@@ -693,7 +785,7 @@ return {
             accept = "<f13>",
           }
         },
-        panel = {enabled = false},
+        panel = { enabled = false },
         copilot_node_command = 'node',
       })
     end,
@@ -721,4 +813,3 @@ return {
   },
 
 }
-

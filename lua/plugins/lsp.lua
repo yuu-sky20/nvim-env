@@ -153,10 +153,9 @@ return {
         on_attach = on_attach,
       })
 
-      -- Markdown LSP (marksman)
-      lspconfig.marksman.setup({
+      -- Markdown LSP (markdown-oxide)
+      lspconfig.markdown_oxide.setup({
         capabilities = capabilities,
-        on_attach = on_attach,
       })
 
       -- Node.js
